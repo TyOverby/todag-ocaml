@@ -1,0 +1,4 @@
+(executable
+    (name main)
+    (libraries core core_kernel todag)
+    (preprocess (pps ppx_let)))
