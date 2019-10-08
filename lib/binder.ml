@@ -4,6 +4,7 @@ module Id : sig
   type t [@@deriving compare, hash]
 
   val next : offset:t option -> t
+  val to_string : t -> string
 
   include Sexpable.S with type t := t
   include Comparable.S with type t := t
@@ -21,6 +22,8 @@ end = struct
     | Some t -> r - t
     | None -> r
   ;;
+
+  let to_string = Int.to_string
 end
 
 module Node = struct

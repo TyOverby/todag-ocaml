@@ -15,6 +15,10 @@ let run_bind text =
   |> print_s
 ;;
 
+let run_dot text =
+  text |> Lexer.lex |> Parser.parse |> Binder.bind |> Dot.emit |> print_endline
+;;
+
 let%expect_test "blank lex" =
   run_lex {|
     
@@ -252,4 +256,29 @@ let%expect_test "bind nested nodes with header" =
                  (((indent 0) (line 2) (kind (Todo_item Empty)) (text aaa)))))))
              (token (((indent 0) (line 1) (kind (Header 1)) (text AAA))))))))))))
      (top_level_description ())) |}]
+;;
+
+let%expect_test "dot emit section" =
+  run_dot {|
+# hi 
+    |};
+  [%expect "\n    digraph G {\n    subgraph cluster_hi {\n    }\n    }"]
+;;
+
+let%expect_test "dot emit section" =
+  run_dot {|
+# hi 
+## foo
+# neighbor
+    |};
+  [%expect
+    {|
+      digraph G {
+      subgraph cluster_hi {
+      subgraph cluster_foo {
+      }
+      }
+      subgraph cluster_neighbor {
+      }
+      } |}]
 ;;

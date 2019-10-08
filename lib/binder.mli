@@ -1,12 +1,17 @@
 open! Core_kernel
-module Id : Comparable.S
+
+module Id : sig
+  include Comparable.S
+
+  val to_string : t -> string
+end
 
 module Node : sig
   type t [@@deriving sexp_of]
 end
 
 module Path : sig
-  type t [@@deriving sexp_of]
+  type t = string list [@@deriving sexp_of]
 
   include Comparable.S with type t := t
 end
