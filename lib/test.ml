@@ -266,20 +266,20 @@ let%expect_test "dot emit section" =
 # hi 
     |};
   [%expect
-    "\n\
-    \    digraph G {\n\
-    \    node [shape=record];\n\
-    \    subgraph cluster_hi {\n\
-    \    fontname=\"sans-serif\" fontsize=\"12\" label=<\n\
-    \       <table border=\"0\" cellborder=\"0\" cellspacing=\"2\">\n\
-    \           <tr>\n\
-    \             <td align=\"left\"><b><font color=\"#000000\" \
-     point-size=\"20\">hi</font></b></td>\n\
-    \           </tr>\n\n\
-    \       </table>\n\
-    \      >\n\
-    \    }\n\
-    \    }"]
+    "
+    digraph G {
+    node [shape=record];
+    subgraph cluster_ {
+    fontname=\"sans-serif\" fontsize=\"12\" label=<
+       <table border=\"0\" cellborder=\"0\" cellspacing=\"2\">
+           <tr>
+             <td align=\"left\"><b><font color=\"#000000\" point-size=\"20\">hi</font></b></td>
+           </tr>
+
+       </table>
+      >
+    }
+    }"]
 ;;
 
 let%expect_test "dot emit section" =
@@ -292,7 +292,7 @@ let%expect_test "dot emit section" =
     {|
       digraph G {
       node [shape=record];
-      subgraph cluster_hi {
+      subgraph cluster_ {
       fontname="sans-serif" fontsize="12" label=<
          <table border="0" cellborder="0" cellspacing="2">
              <tr>
@@ -301,7 +301,7 @@ let%expect_test "dot emit section" =
 
          </table>
         >
-      subgraph cluster_foo {
+      subgraph cluster_ {
       fontname="sans-serif" fontsize="12" label=<
          <table border="0" cellborder="0" cellspacing="2">
              <tr>
@@ -312,7 +312,7 @@ let%expect_test "dot emit section" =
         >
       }
       }
-      subgraph cluster_neighbor {
+      subgraph cluster_ {
       fontname="sans-serif" fontsize="12" label=<
          <table border="0" cellborder="0" cellspacing="2">
              <tr>
@@ -355,7 +355,7 @@ let%expect_test "dot emit single item inside two sections" =
     {|
     digraph G {
     node [shape=record];
-    subgraph cluster_aaaaaa {
+    subgraph cluster_ {
     fontname="sans-serif" fontsize="12" label=<
        <table border="0" cellborder="0" cellspacing="2">
            <tr>
@@ -372,7 +372,7 @@ let%expect_test "dot emit single item inside two sections" =
 
        </table>
       > ]
-    subgraph cluster_bbbbbb {
+    subgraph cluster_ {
     fontname="sans-serif" fontsize="12" label=<
        <table border="0" cellborder="0" cellspacing="2">
            <tr>
