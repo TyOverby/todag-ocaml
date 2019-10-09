@@ -189,12 +189,13 @@ let%expect_test "bind two unrelated todos" =
     {|
     ((nodes
       ((1
-        ((name todo-a) (kind Empty) (description (description-a1 description-a2))
+        ((name todo-a) (kind Empty)
+         (description ("description-a1 description-a2"))
          (ast ((todo-a _ description-a1 description-a2)))))
        (2
         ((name todo-b) (kind Empty) (description (description-b))
          (ast ((todo-b _ description-b)))))))
-     (path_to_ids (((todo-a) (1)) ((todo-b) (2))))
+     (path_to_ids ((((Todo todo-a)) (1)) (((Todo todo-b)) (2))))
      (name_to_ids ((todo-a (1)) (todo-b (2)))) (dependencies ())
      (path_to_section ()) (top_level_description ())) |}]
 ;;
@@ -221,7 +222,7 @@ let%expect_test "nested-nodes" =
     ((nodes
       ((1 ((name aaa) (kind Empty) (description ()) (ast ((aaa _ (bbbb x))))))
        (2 ((name bbbb) (kind Done) (description ()) (ast ((bbbb x)))))))
-     (path_to_ids (((aaa) (1)) ((aaa bbbb) (2))))
+     (path_to_ids ((((Todo aaa)) (1)) (((Todo aaa) (Todo bbbb)) (2))))
      (name_to_ids ((aaa (1)) (bbbb (2)))) (dependencies ((1 (2))))
      (path_to_section ()) (top_level_description ())) |}]
 ;;
@@ -237,11 +238,13 @@ let%expect_test "bind nested nodes with header" =
     ((nodes
       ((1 ((name aaa) (kind Empty) (description ()) (ast ((aaa _ (bbbb x))))))
        (2 ((name bbbb) (kind Done) (description ()) (ast ((bbbb x)))))))
-     (path_to_ids (((AAA aaa) (1)) ((AAA aaa bbbb) (2))))
+     (path_to_ids
+      ((((Header AAA) (Todo aaa)) (1))
+       (((Header AAA) (Todo aaa) (Todo bbbb)) (2))))
      (name_to_ids ((aaa (1)) (bbbb (2)))) (dependencies ((1 (2))))
      (path_to_section
-      (((AAA)
-        (((path (AAA)) (description ())
+      ((((Header AAA))
+        (((path ((Header AAA))) (description ())
           (ast
            ((Header (level 1) (title AAA)
              (children
@@ -262,7 +265,21 @@ let%expect_test "dot emit section" =
   run_dot {|
 # hi 
     |};
-  [%expect "\n    digraph G {\n    subgraph cluster_hi {\n    }\n    }"]
+  [%expect
+    "\n\
+    \    digraph G {\n\
+    \    node [shape=record];\n\
+    \    subgraph cluster_hi {\n\
+    \    fontname=\"sans-serif\" fontsize=\"12\" label=<\n\
+    \       <table border=\"0\" cellborder=\"0\" cellspacing=\"2\">\n\
+    \           <tr>\n\
+    \             <td align=\"left\"><b><font color=\"#000000\" \
+     point-size=\"20\">hi</font></b></td>\n\
+    \           </tr>\n\n\
+    \       </table>\n\
+    \      >\n\
+    \    }\n\
+    \    }"]
 ;;
 
 let%expect_test "dot emit section" =
@@ -274,11 +291,105 @@ let%expect_test "dot emit section" =
   [%expect
     {|
       digraph G {
+      node [shape=record];
       subgraph cluster_hi {
+      fontname="sans-serif" fontsize="12" label=<
+         <table border="0" cellborder="0" cellspacing="2">
+             <tr>
+               <td align="left"><b><font color="#000000" point-size="20">hi</font></b></td>
+             </tr>
+
+         </table>
+        >
       subgraph cluster_foo {
+      fontname="sans-serif" fontsize="12" label=<
+         <table border="0" cellborder="0" cellspacing="2">
+             <tr>
+               <td align="left"><b><font color="#000000" point-size="20">foo</font></b></td>
+             </tr>
+
+         </table>
+        >
       }
       }
       subgraph cluster_neighbor {
+      fontname="sans-serif" fontsize="12" label=<
+         <table border="0" cellborder="0" cellspacing="2">
+             <tr>
+               <td align="left"><b><font color="#000000" point-size="20">neighbor</font></b></td>
+             </tr>
+
+         </table>
+        >
       }
       } |}]
+;;
+
+let%expect_test "dot emit single item" =
+  run_dot {|
+[ ] hello
+    |};
+  [%expect
+    {|
+      digraph G {
+      node [shape=record];
+      node_1 [ fontname="sans-serif" fontsize="12" color="#000000" label=<
+         <table border="0" cellborder="0" cellspacing="2">
+             <tr>
+               <td align="left"><b><font color="#000000" point-size="15">hello</font></b></td>
+             </tr>
+
+         </table>
+        > ]
+      } |}]
+;;
+
+let%expect_test "dot emit single item inside two sections" =
+  run_dot {|
+# aaaaaa
+[ ] inside a
+## bbbbbb
+[ ] inside b
+    |};
+  [%expect
+    {|
+    digraph G {
+    node [shape=record];
+    subgraph cluster_aaaaaa {
+    fontname="sans-serif" fontsize="12" label=<
+       <table border="0" cellborder="0" cellspacing="2">
+           <tr>
+             <td align="left"><b><font color="#000000" point-size="20">aaaaaa</font></b></td>
+           </tr>
+
+       </table>
+      >
+    node_1 [ fontname="sans-serif" fontsize="12" color="#000000" label=<
+       <table border="0" cellborder="0" cellspacing="2">
+           <tr>
+             <td align="left"><b><font color="#000000" point-size="15">inside a</font></b></td>
+           </tr>
+
+       </table>
+      > ]
+    subgraph cluster_bbbbbb {
+    fontname="sans-serif" fontsize="12" label=<
+       <table border="0" cellborder="0" cellspacing="2">
+           <tr>
+             <td align="left"><b><font color="#000000" point-size="20">bbbbbb</font></b></td>
+           </tr>
+
+       </table>
+      >
+    node_2 [ fontname="sans-serif" fontsize="12" color="#000000" label=<
+       <table border="0" cellborder="0" cellspacing="2">
+           <tr>
+             <td align="left"><b><font color="#000000" point-size="15">inside b</font></b></td>
+           </tr>
+
+       </table>
+      > ]
+    }
+    }
+    } |}]
 ;;

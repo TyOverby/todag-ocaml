@@ -35,25 +35,37 @@ module Node = struct
     ; description : string list
     ; ast : Parser.t option
     }
-  [@@deriving sexp_of]
-end
-
-module Section = struct
-  type t =
-    { path : string list
-    ; description : string list
-    ; ast : Parser.t option
-    }
-  [@@deriving sexp, fields]
+  [@@deriving sexp_of, fields]
 end
 
 module Path = struct
+  module Element = struct
+    type t =
+      | Header of string
+      | Todo of string
+    [@@deriving sexp, compare, equal]
+
+    let to_string = function
+      | Header s -> s
+      | Todo s -> s
+    ;;
+  end
+
   module T = struct
-    type t = string list [@@deriving sexp, compare]
+    type t = Element.t list [@@deriving sexp, compare]
   end
 
   include T
   include Comparable.Make (T)
+end
+
+module Section = struct
+  type t =
+    { path : Path.t
+    ; description : string list
+    ; ast : Parser.t option
+    }
+  [@@deriving sexp, fields]
 end
 
 module Graph = struct
@@ -84,7 +96,7 @@ let add_and_append map ~key ~data =
       | None -> [ data ])
 ;;
 
-let rec bind ~offset ~parent ~acc ~path (node : Parser.t) =
+let rec bind ~offset ~parent ~acc ~(path : Path.t) (node : Parser.t) =
   match node with
   | Top_level children ->
     let description, acc =
@@ -96,13 +108,14 @@ let rec bind ~offset ~parent ~acc ~path (node : Parser.t) =
     in
     { acc with Graph.top_level_description = description }
   | Header { title; children; _ } ->
-    let path = List.append path [ title ] in
+    let path = List.append path [ Path.Element.Header title ] in
     let description, acc =
       List.fold children ~init:([], acc) ~f:(fun (description, acc) child ->
-          match child with
-          | Description { contents; _ } -> contents :: description, acc
-          | Linebreak -> "" :: description, acc
-          | other -> description, bind ~offset ~parent:None ~acc ~path other)
+          match child, description with
+          | Description { contents; _ }, [] -> contents :: description, acc
+          | Description { contents; _ }, hd::rst -> (hd ^ " " ^ contents) :: rst, acc
+          | Linebreak, _ -> "" :: description, acc
+          | other, _ -> description, bind ~offset ~parent:None ~acc ~path other)
     in
     let section = { Section.path; description; ast = Some node } in
     { acc with
@@ -111,13 +124,14 @@ let rec bind ~offset ~parent ~acc ~path (node : Parser.t) =
     }
   | Todo_item { name; kind; children; _ } ->
     let id = Id.next ~offset:(Some offset) in
-    let nested_path = List.append path [ name ] in
+    let nested_path = List.append path [ Path.Element.Todo name ] in
     let description, acc =
       List.fold children ~init:([], acc) ~f:(fun (description, acc) child ->
-          match child with
-          | Description { contents; _ } -> contents :: description, acc
-          | Linebreak -> "" :: description, acc
-          | other ->
+          match child, description with
+          | Description { contents; _ }, [] -> [ contents ], acc
+          | Description { contents; _ }, hd :: rst -> (hd ^ " " ^ contents) :: rst, acc
+          | Linebreak, _ -> "" :: description, acc
+          | other, _ ->
             description, bind ~offset ~parent:(Some id) ~acc ~path:nested_path other)
     in
     let node = { Node.name; kind; description; ast = Some node } in

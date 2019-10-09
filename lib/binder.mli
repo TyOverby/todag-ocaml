@@ -8,10 +8,23 @@ end
 
 module Node : sig
   type t [@@deriving sexp_of]
+
+  val name : t -> string
+  val kind : t -> Lexer.Line.Status.t
+  val description : t -> string list
 end
 
 module Path : sig
-  type t = string list [@@deriving sexp_of]
+  module Element : sig
+    type t =
+      | Header of string
+      | Todo of string
+    [@@deriving compare, equal, sexp]
+
+    val to_string : t -> string
+  end
+
+  type t = Element.t list [@@deriving sexp_of]
 
   include Comparable.S with type t := t
 end
@@ -19,7 +32,7 @@ end
 module Section : sig
   type t [@@deriving sexp_of]
 
-  val path : t -> string list
+  val path : t -> Path.t
   val description : t -> string list
 end
 
