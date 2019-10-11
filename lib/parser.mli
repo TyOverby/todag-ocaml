@@ -6,11 +6,11 @@ type t =
       ; children : t list
       ; token : Lexer.Line.t option
       }
+  | Dependents of string list
   | Todo_item of
       { name : string
       ; kind : Lexer.Line.Status.t
       ; children : t list
-      ; dependents : string list
       ; token : Lexer.Line.t option
       }
   | Description of { contents : string; token : Lexer.Line.t option }

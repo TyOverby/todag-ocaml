@@ -12,6 +12,7 @@ module Node : sig
   val name : t -> string
   val kind : t -> Lexer.Line.Status.t
   val description : t -> string list
+  val named_dependents : t -> string list
 end
 
 module Path : sig

@@ -13,6 +13,8 @@ module Line : sig
       | Blank
       | Todo_item of Status.t
       | Header of int
+      | Depends_on
+      | List_item
       | Body
       | Error of { message : string; contents : string }
     [@@deriving sexp]

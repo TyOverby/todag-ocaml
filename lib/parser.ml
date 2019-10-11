@@ -8,11 +8,11 @@ type t =
       ; children : t list
       ; token : Lexer.Line.t option
       }
+  | Dependents of string list
   | Todo_item of
       { name : string
       ; kind : Lexer.Line.Status.t
       ; children : t list
-      ; dependents : string list
       ; token : Lexer.Line.t option
       }
   | Description of { contents : string; token : Lexer.Line.t option }
@@ -37,6 +37,7 @@ module Pretty = struct
       Sexp.List (Sexp.Atom name :: sexp_of_kind kind :: List.map children ~f:sexp_of_t)
     | Description { contents; _ } -> Sexp.Atom contents
     | Linebreak -> Sexp.Atom "-linebreak-"
+    | Dependents l -> l |> List.map ~f:(fun a -> Sexp.Atom a) |> Sexp.List
   ;;
 end
 
@@ -69,8 +70,7 @@ let rec parse_at ~indent_level ~header_level tokens =
     else (
       let children, rem = parse_at ~indent_level:indent ~header_level:max_header rest in
       let continued, rem = recurse rem in
-      ( Todo_item
-          { name = text; kind = status; children; dependents = []; token = Some token }
+      ( Todo_item { name = text; kind = status; children; token = Some token }
         :: continued
       , rem ))
   | { Lexer.Line.kind = Error _; _ } :: rest -> parse_at ~indent_level ~header_level rest
@@ -80,6 +80,18 @@ let rec parse_at ~indent_level ~header_level tokens =
     else (
       let continued, rem = recurse rest in
       Description { contents = text; token = Some token } :: continued, rem)
+  | { Lexer.Line.kind = Depends_on; indent; _ } :: rest ->
+    let items, rest =
+      List.split_while rest ~f:(function
+          | { Lexer.Line.kind = List_item; indent = item_indent; _ }
+            when indent = item_indent ->
+            true
+          | _ -> false)
+    in
+    let items = items |> List.map ~f:(fun a -> a.text) |> Dependents in
+    let continued, rem = recurse rest in
+    items :: continued, rem
+  | { Lexer.Line.kind = List_item; _ } :: _ -> failwith "fail"
 ;;
 
 let parse tokens =

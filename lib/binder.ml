@@ -33,6 +33,7 @@ module Node = struct
     { name : string
     ; kind : Lexer.Line.Status.t
     ; description : string list
+    ; named_dependents : string list
     ; ast : Parser.t option
     }
   [@@deriving sexp_of, fields]
@@ -113,7 +114,7 @@ let rec bind ~offset ~parent ~acc ~(path : Path.t) (node : Parser.t) =
       List.fold children ~init:([], acc) ~f:(fun (description, acc) child ->
           match child, description with
           | Description { contents; _ }, [] -> contents :: description, acc
-          | Description { contents; _ }, hd::rst -> (hd ^ " " ^ contents) :: rst, acc
+          | Description { contents; _ }, hd :: rst -> (hd ^ " " ^ contents) :: rst, acc
           | Linebreak, _ -> "" :: description, acc
           | other, _ -> description, bind ~offset ~parent:None ~acc ~path other)
     in
@@ -125,16 +126,23 @@ let rec bind ~offset ~parent ~acc ~(path : Path.t) (node : Parser.t) =
   | Todo_item { name; kind; children; _ } ->
     let id = Id.next ~offset:(Some offset) in
     let nested_path = List.append path [ Path.Element.Todo name ] in
-    let description, acc =
-      List.fold children ~init:([], acc) ~f:(fun (description, acc) child ->
+    let description, named_dependents, acc =
+      List.fold
+        children
+        ~init:([], [], acc)
+        ~f:(fun (description, named_dependents, acc) child ->
           match child, description with
-          | Description { contents; _ }, [] -> [ contents ], acc
-          | Description { contents; _ }, hd :: rst -> (hd ^ " " ^ contents) :: rst, acc
-          | Linebreak, _ -> "" :: description, acc
+          | Description { contents; _ }, [] -> [ contents ], named_dependents, acc
+          | Description { contents; _ }, hd :: rst ->
+            (hd ^ " " ^ contents) :: rst, named_dependents, acc
+          | Linebreak, _ -> "" :: description, named_dependents, acc
+          | Dependents l, _ -> description, List.concat [ l; named_dependents ], acc
           | other, _ ->
-            description, bind ~offset ~parent:(Some id) ~acc ~path:nested_path other)
+            ( "" :: description
+            , named_dependents
+            , bind ~offset ~parent:(Some id) ~acc ~path:nested_path other ))
     in
-    let node = { Node.name; kind; description; ast = Some node } in
+    let node = { Node.name; kind; description; named_dependents; ast = Some node } in
     { acc with
       Graph.nodes = Map.add_exn acc.nodes ~key:id ~data:node
     ; path_to_ids = add_and_append acc.path_to_ids ~key:nested_path ~data:id
@@ -143,10 +151,10 @@ let rec bind ~offset ~parent ~acc ~(path : Path.t) (node : Parser.t) =
         Option.fold parent ~init:acc.dependencies ~f:(fun acc parent ->
             add_and_append acc ~key:parent ~data:id)
     }
-  | Description _ | Linebreak -> acc
+  | Dependents _ | Description _ | Linebreak -> failwith "emit warning here"
 ;;
 
-let bind node =
+let initial_bind node =
   let id = Id.next ~offset:None in
   let graph = bind ~offset:id ~parent:None ~acc:Graph.empty ~path:[] node in
   let rev_node (node : Node.t) = { node with description = List.rev node.description } in
@@ -158,3 +166,21 @@ let bind node =
   ; top_level_description = List.rev graph.top_level_description
   }
 ;;
+
+let attempt graph =
+  let resolve graph name =
+    graph |> Graph.name_to_ids |> Fn.flip Map.find name |> Option.value_exn
+  in
+  graph
+  |> Graph.nodes
+  |> Map.to_alist
+  |> List.fold ~init:graph ~f:(fun acc (id, node) ->
+         let resolved = List.bind node.named_dependents ~f:(resolve acc) in
+         let new_deps_map =
+           List.fold resolved ~init:acc.dependencies ~f:(fun acc depended_on ->
+               add_and_append acc ~key:id ~data:depended_on)
+         in
+         { acc with dependencies = new_deps_map })
+;;
+
+let bind node = node |> initial_bind |> attempt

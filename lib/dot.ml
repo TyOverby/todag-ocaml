@@ -44,6 +44,7 @@ let detail_color (status : Lexer.Line.Status.t option) v =
 let create_node_contents ~title_size ~title ~lines ~kind =
   let lines_concat =
     lines
+  |> List.filter ~f:(fun s -> String.length s <> 0)
     |> List.map ~f:(fun text ->
            sprintf
              {|<tr><td align="left"><font color="%s">%s</font></td></tr>|}
@@ -67,23 +68,24 @@ let create_node_contents ~title_size ~title ~lines ~kind =
 ;;
 
 let emit graph =
-  let sections = graph |> Binder.Graph.path_to_section |> Map.to_alist |> List.map ~f:(fun (k, v) -> k, Some v) in
+  let sections =
+    graph
+    |> Binder.Graph.path_to_section
+    |> Map.to_alist
+    |> List.map ~f:(fun (k, v) -> k, Some v)
+  in
   let sections = ([], None) :: sections in
   let nodes = graph |> Binder.Graph.path_to_ids |> Map.to_alist in
   let emit_structure buffer =
     let emit_start_subgraph ~sections path_segment =
-        let descriptions_of_all_sections = 
-            let open List.Let_syntax in 
-            let%bind sections = Option.to_list sections in 
-            let%bind section = sections in 
-            let%bind descriptions = Binder.Section.description section in
-            return descriptions
-   in 
-
-      Printf.bprintf
-        buffer
-        "subgraph cluster_ {\n"
-        ;
+      let descriptions_of_all_sections =
+        let open List.Let_syntax in
+        let%bind sections = Option.to_list sections in
+        let%bind section = sections in
+        let%bind descriptions = Binder.Section.description section in
+        return descriptions
+      in
+      Printf.bprintf buffer "subgraph cluster_ {\n";
       Printf.bprintf
         buffer
         "fontname=\"sans-serif\" fontsize=\"12\" label=<%s>\n"
@@ -100,7 +102,8 @@ let emit graph =
           | Some old_path, new_path ->
             not_present_in_b ~a:old_path ~b:new_path
             |> List.iter ~f:(fun _ -> Printf.bprintf buffer "} \n");
-            unique_b ~a:old_path ~b:new_path |> List.iter ~f:(emit_start_subgraph ~sections));
+            unique_b ~a:old_path ~b:new_path
+            |> List.iter ~f:(emit_start_subgraph ~sections));
           nodes
           |> List.filter ~f:(fun (node_path, _) ->
                  should_fit_in_section ~section_path:path ~node_path)

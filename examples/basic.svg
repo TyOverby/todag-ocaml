@@ -23,10 +23,10 @@
 <!-- node_1 -->
 <g id="node1" class="node">
 <title>node_1</title>
-<polygon fill="none" stroke="#0a05cc" points="22.5,-16.5 22.5,-83.5 229.5,-83.5 229.5,-16.5 22.5,-16.5"/>
-<text text-anchor="start" x="35" y="-64" font-family="sans-serif" font-weight="bold" font-size="15.00" fill="#0a05cc">Test</text>
-<text text-anchor="start" x="34.81" y="-44.4" font-family="sans-serif" font-size="12.00" fill="#0a05aa">This is some text for test more text</text>
-<text text-anchor="start" x="35" y="-26.4" font-family="sans-serif" font-size="12.00" fill="#0a05aa"> More content after line break.</text>
+<polygon fill="none" stroke="#0a05cc" points="29.5,-16.5 29.5,-83.5 236.5,-83.5 236.5,-16.5 29.5,-16.5"/>
+<text text-anchor="start" x="42" y="-64" font-family="sans-serif" font-weight="bold" font-size="15.00" fill="#0a05cc">Test</text>
+<text text-anchor="start" x="41.81" y="-44.4" font-family="sans-serif" font-size="12.00" fill="#0a05aa">This is some text for test more text</text>
+<text text-anchor="start" x="42" y="-26.4" font-family="sans-serif" font-size="12.00" fill="#0a05aa"> More content after line break.</text>
 </g>
 <!-- node_2 -->
 <g id="node2" class="node">
@@ -35,10 +35,10 @@
 <text text-anchor="start" x="120.58" y="-141" font-family="sans-serif" font-weight="bold" font-size="15.00" fill="#000000">Foo</text>
 </g>
 <!-- node_2&#45;&gt;node_1 -->
-<g id="edge1" class="edge">
+<g id="edge2" class="edge">
 <title>node_2&#45;&gt;node_1</title>
-<path fill="none" stroke="black" d="M131.72,-126.94C131.01,-117.61 130.11,-105.6 129.23,-93.89"/>
-<polygon fill="black" stroke="black" points="132.71,-93.47 128.47,-83.76 125.73,-93.99 132.71,-93.47"/>
+<path fill="none" stroke="black" d="M133,-126.94C133,-117.61 133,-105.6 133,-93.89"/>
+<polygon fill="black" stroke="black" points="136.5,-93.76 133,-83.76 129.5,-93.76 136.5,-93.76"/>
 </g>
 <!-- node_3 -->
 <g id="node3" class="node">
@@ -48,10 +48,10 @@
 <text text-anchor="start" x="29" y="-130.4" font-family="sans-serif" font-size="12.00" fill="#a0a0a0">done</text>
 </g>
 <!-- node_3&#45;&gt;node_1 -->
-<g id="edge2" class="edge">
+<g id="edge3" class="edge">
 <title>node_3&#45;&gt;node_1</title>
-<path fill="none" stroke="black" d="M71.06,-120.05C77.95,-111.39 85.94,-101.35 93.65,-91.66"/>
-<polygon fill="black" stroke="black" points="96.55,-93.64 100.04,-83.63 91.07,-89.28 96.55,-93.64"/>
+<path fill="none" stroke="black" d="M72.86,-120.05C80.48,-111.3 89.32,-101.15 97.84,-91.36"/>
+<polygon fill="black" stroke="black" points="100.65,-93.47 104.58,-83.63 95.37,-88.87 100.65,-93.47"/>
 </g>
 <!-- node_4 -->
 <g id="node4" class="node">
@@ -59,6 +59,12 @@
 <polygon fill="none" stroke="#cc050a" points="178,-120.5 178,-169.5 374,-169.5 374,-120.5 178,-120.5"/>
 <text text-anchor="start" x="190" y="-150" font-family="sans-serif" font-weight="bold" font-size="15.00" fill="#cc050a">Ahh</text>
 <text text-anchor="start" x="189.8" y="-130.4" font-family="sans-serif" font-size="12.00" fill="#aa050a">oh no, I&#39;m blocked on something</text>
+</g>
+<!-- node_4&#45;&gt;node_1 -->
+<g id="edge1" class="edge">
+<title>node_4&#45;&gt;node_1</title>
+<path fill="none" stroke="black" d="M239.55,-120.29C224.96,-110.81 207.79,-99.64 191.54,-89.07"/>
+<polygon fill="black" stroke="black" points="193.44,-86.13 183.15,-83.61 189.62,-92 193.44,-86.13"/>
 </g>
 </g>
 </svg>
