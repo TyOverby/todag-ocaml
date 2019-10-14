@@ -94,7 +94,7 @@ let%expect_test "todo items" =
     {|
       (((indent 0) (line 0) (kind Blank) (text ""))
        ((indent 4) (line 1) (kind (Todo_item Empty)) (text aaaa))
-       ((indent 8) (line 2) (kind Depends_on) (text "Depends On:"))
+       ((indent 8) (line 2) (kind (Depends_on ())) (text "Depends On:"))
        ((indent 8) (line 3) (kind List_item) (text BBB))
        ((indent 8) (line 4) (kind List_item) (text CCC))
        ((indent 4) (line 5) (kind Blank) (text ""))) |}]
@@ -248,7 +248,7 @@ let%expect_test "nested-nodes" =
     {|
     ((nodes
       ((1
-        ((name aaa) (kind Empty) (description ()) (named_dependents ())
+        ((name aaa) (kind Empty) (description ("")) (named_dependents ())
          (ast ((aaa _ (bbbb x))))))
        (2
         ((name bbbb) (kind Done) (description ()) (named_dependents ())
@@ -289,7 +289,7 @@ let%expect_test "bind nested nodes with header" =
     {|
     ((nodes
       ((1
-        ((name aaa) (kind Empty) (description ()) (named_dependents ())
+        ((name aaa) (kind Empty) (description ("")) (named_dependents ())
          (ast ((aaa _ (bbbb x))))))
        (2
         ((name bbbb) (kind Done) (description ()) (named_dependents ())
@@ -323,8 +323,8 @@ let%expect_test "dot emit section" =
     "\n\
     \    digraph G {\n\
     \    node [shape=record];\n\
-    \    subgraph cluster_ {\n\
-    \    fontname=\"sans-serif\" fontsize=\"12\" label=<\n\
+    \    subgraph cluster_0 {\n\
+    \    fontname=\"Helvetica Neue\" fontsize=\"12\" label=<\n\
     \       <table border=\"0\" cellborder=\"0\" cellspacing=\"2\">\n\
     \           <tr>\n\
     \             <td align=\"left\"><b><font color=\"#000000\" \
@@ -346,8 +346,8 @@ let%expect_test "dot emit section" =
     {|
       digraph G {
       node [shape=record];
-      subgraph cluster_ {
-      fontname="sans-serif" fontsize="12" label=<
+      subgraph cluster_0 {
+      fontname="Helvetica Neue" fontsize="12" label=<
          <table border="0" cellborder="0" cellspacing="2">
              <tr>
                <td align="left"><b><font color="#000000" point-size="20">hi</font></b></td>
@@ -355,8 +355,8 @@ let%expect_test "dot emit section" =
 
          </table>
         >
-      subgraph cluster_ {
-      fontname="sans-serif" fontsize="12" label=<
+      subgraph cluster_1 {
+      fontname="Helvetica Neue" fontsize="12" label=<
          <table border="0" cellborder="0" cellspacing="2">
              <tr>
                <td align="left"><b><font color="#000000" point-size="20">foo</font></b></td>
@@ -366,8 +366,8 @@ let%expect_test "dot emit section" =
         >
       }
       }
-      subgraph cluster_ {
-      fontname="sans-serif" fontsize="12" label=<
+      subgraph cluster_2 {
+      fontname="Helvetica Neue" fontsize="12" label=<
          <table border="0" cellborder="0" cellspacing="2">
              <tr>
                <td align="left"><b><font color="#000000" point-size="20">neighbor</font></b></td>
@@ -387,7 +387,7 @@ let%expect_test "dot emit single item" =
     {|
       digraph G {
       node [shape=record];
-      node_1 [ fontname="sans-serif" fontsize="12" color="#000000" label=<
+      node_1 [ fontname="Helvetica Neue" fontsize="12" color="#000000" label=<
          <table border="0" cellborder="0" cellspacing="2">
              <tr>
                <td align="left"><b><font color="#000000" point-size="15">hello</font></b></td>
@@ -409,8 +409,8 @@ let%expect_test "dot emit single item inside two sections" =
     {|
     digraph G {
     node [shape=record];
-    subgraph cluster_ {
-    fontname="sans-serif" fontsize="12" label=<
+    subgraph cluster_0 {
+    fontname="Helvetica Neue" fontsize="12" label=<
        <table border="0" cellborder="0" cellspacing="2">
            <tr>
              <td align="left"><b><font color="#000000" point-size="20">aaaaaa</font></b></td>
@@ -418,7 +418,7 @@ let%expect_test "dot emit single item inside two sections" =
 
        </table>
       >
-    node_1 [ fontname="sans-serif" fontsize="12" color="#000000" label=<
+    node_1 [ fontname="Helvetica Neue" fontsize="12" color="#000000" label=<
        <table border="0" cellborder="0" cellspacing="2">
            <tr>
              <td align="left"><b><font color="#000000" point-size="15">inside a</font></b></td>
@@ -426,8 +426,8 @@ let%expect_test "dot emit single item inside two sections" =
 
        </table>
       > ]
-    subgraph cluster_ {
-    fontname="sans-serif" fontsize="12" label=<
+    subgraph cluster_1 {
+    fontname="Helvetica Neue" fontsize="12" label=<
        <table border="0" cellborder="0" cellspacing="2">
            <tr>
              <td align="left"><b><font color="#000000" point-size="20">bbbbbb</font></b></td>
@@ -435,7 +435,7 @@ let%expect_test "dot emit single item inside two sections" =
 
        </table>
       >
-    node_2 [ fontname="sans-serif" fontsize="12" color="#000000" label=<
+    node_2 [ fontname="Helvetica Neue" fontsize="12" color="#000000" label=<
        <table border="0" cellborder="0" cellspacing="2">
            <tr>
              <td align="left"><b><font color="#000000" point-size="15">inside b</font></b></td>
@@ -447,3 +447,5 @@ let%expect_test "dot emit single item inside two sections" =
     }
     } |}]
 ;;
+
+(* CR toverby: add test for todo item with no title *)

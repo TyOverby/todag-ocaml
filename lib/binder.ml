@@ -169,6 +169,7 @@ let initial_bind node =
 
 let attempt graph =
   let resolve graph name =
+    let name = String.strip name in
     graph |> Graph.name_to_ids |> Fn.flip Map.find name |> Option.value_exn
   in
   graph

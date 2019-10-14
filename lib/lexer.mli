@@ -13,7 +13,7 @@ module Line : sig
       | Blank
       | Todo_item of Status.t
       | Header of int
-      | Depends_on
+      | Depends_on of string option
       | List_item
       | Body
       | Error of { message : string; contents : string }

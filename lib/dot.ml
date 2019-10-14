@@ -44,7 +44,8 @@ let detail_color (status : Lexer.Line.Status.t option) v =
 let create_node_contents ~title_size ~title ~lines ~kind =
   let lines_concat =
     lines
-  |> List.filter ~f:(fun s -> String.length s <> 0)
+    |> List.filter ~f:(fun s -> String.length s <> 0)
+    |> List.bind ~f:(Softbreak.softbreak ~on:50)
     |> List.map ~f:(fun text ->
            sprintf
              {|<tr><td align="left"><font color="%s">%s</font></td></tr>|}
@@ -68,6 +69,7 @@ let create_node_contents ~title_size ~title ~lines ~kind =
 ;;
 
 let emit graph =
+  let id = ref 0 in
   let sections =
     graph
     |> Binder.Graph.path_to_section
@@ -85,10 +87,11 @@ let emit graph =
         let%bind descriptions = Binder.Section.description section in
         return descriptions
       in
-      Printf.bprintf buffer "subgraph cluster_ {\n";
+      Printf.bprintf buffer "subgraph cluster_%d {\n" !id;
+      Int.incr id;
       Printf.bprintf
         buffer
-        "fontname=\"sans-serif\" fontsize=\"12\" label=<%s>\n"
+        "fontname=\"Helvetica Neue\" fontsize=\"12\" label=<%s>\n"
         (create_node_contents
            ~title_size:20
            ~title:(Binder.Path.Element.to_string path_segment)
@@ -120,7 +123,7 @@ let emit graph =
                  in
                  bprintf
                    buffer
-                   "node_%s [ fontname=\"sans-serif\" fontsize=\"12\" color=\"%s\" \
+                   "node_%s [ fontname=\"Helvetica Neue\" fontsize=\"12\" color=\"%s\" \
                     label=<%s> ]\n"
                    (Binder.Id.to_string node_id)
                    (detail_color (Some (Binder.Node.kind node)) `Title)

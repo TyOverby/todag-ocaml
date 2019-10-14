@@ -80,7 +80,7 @@ let rec parse_at ~indent_level ~header_level tokens =
     else (
       let continued, rem = recurse rest in
       Description { contents = text; token = Some token } :: continued, rem)
-  | { Lexer.Line.kind = Depends_on; indent; _ } :: rest ->
+  | { Lexer.Line.kind = Depends_on inline_dep; indent; _ } :: rest ->
     let items, rest =
       List.split_while rest ~f:(function
           | { Lexer.Line.kind = List_item; indent = item_indent; _ }
@@ -88,7 +88,8 @@ let rec parse_at ~indent_level ~header_level tokens =
             true
           | _ -> false)
     in
-    let items = items |> List.map ~f:(fun a -> a.text) |> Dependents in
+    let items = items |> List.map ~f:(fun a -> a.text) in
+    let items = Option.to_list inline_dep @ items |> Dependents in
     let continued, rem = recurse rest in
     items :: continued, rem
   | { Lexer.Line.kind = List_item; _ } :: _ -> failwith "fail"

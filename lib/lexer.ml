@@ -15,7 +15,7 @@ module Line = struct
       | Blank
       | Todo_item of Status.t
       | Header of int
-      | Depends_on
+      | Depends_on of string option
       | List_item
       | Body
       | Error of { message : string; contents : string }
@@ -31,8 +31,6 @@ module Line = struct
   [@@deriving sexp]
 end
 
-let depends_on_string = "Depends On:"
-
 let classify i line =
   let get_opt s i = if String.length s <= i then None else Some s.[i] in
   let hd s = get_opt s 0 in
@@ -42,11 +40,12 @@ let classify i line =
     match hd without_indent with
     | None -> Line.Kind.Blank, ""
     | Some _
-      when String.(
-             equal
-               depends_on_string
-               (prefix without_indent (String.length depends_on_string))) ->
-      Line.Kind.Depends_on, without_indent
+      when String.(is_prefix ~prefix:"depends on" (String.lowercase without_indent)) ->
+      (match String.(split (strip without_indent) ~on:':') with
+      | [] | [ _ ] -> Line.Kind.Depends_on None, without_indent
+      | [ _; "" ] -> Line.Kind.Depends_on None, without_indent
+      | [ _; after ] -> Line.Kind.Depends_on (Some after), without_indent
+      | _ -> failwith "handle this")
     | Some '-' ->
       Line.Kind.List_item, without_indent |> Fn.flip String.drop_prefix 1 |> String.strip
     | Some '#' ->
